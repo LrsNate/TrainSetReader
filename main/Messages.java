@@ -6,7 +6,7 @@ public class Messages
 
 	public static void error(String s)
 	{
-		System.err.printf("[Error] %s: %s", Messages.message(s));
+		System.err.printf("[Error] %s", Messages.message(s));
 		System.exit(-1);
 	}
 	

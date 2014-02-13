@@ -9,14 +9,14 @@ import java.util.HashMap;
  */
 public class Grammar
 {
-	private HashMap<String, Integer>		_map;
+	private HashMap<String, RewritingRule>		_map;
 	
 	/**
 	 * Builds a new empty grammar.
 	 */
 	public Grammar()
 	{
-		this._map = new HashMap<String, Integer>();
+		this._map = new HashMap<String, RewritingRule>();
 	}
 	
 	/**
@@ -26,30 +26,38 @@ public class Grammar
 	 */
 	public void addRule(String rule)
 	{
-		if (!this._map.containsKey(rule))
-			this._map.put(rule, 1);
+		String		tab[];
+		
+		tab = rule.split("->");
+		if (tab.length != 2)
+			throw new IllegalArgumentException("Grammar: illegal rule");
+		for (int i = 0; i < tab.length; i++)
+			tab[i] = tab[i].trim();
+		if (this._map.containsKey(tab[0]))
+			this._map.get(tab[0]).addRule(tab[1]);
 		else
-			this._map.put(rule, this._map.get(rule).intValue() + 1);
+			this._map.put(tab[0], new RewritingRule(tab[0], tab[1]));
 	}
-	
-	/**
-	 * Returns a String representation of the grammar.
-	 * @return For each rule, its occurrences count and the rule itself
-	 * separated by a space.
-	 */
+
+	@Deprecated
 	@Override
 	public String toString()
 	{
 		StringBuffer	s;
 		
 		s = new StringBuffer();
-		for (String k : this._map.keySet())
-		{
-			s.append(this._map.get(k));
-			s.append(' ');
-			s.append(k);
-			s.append('\n');
-		}
+		for (RewritingRule r : this._map.values())
+			s.append(r.toString());
+		return (s.toString());
+	}
+	
+	public String toString(int precision)
+	{
+		StringBuffer	s;
+		
+		s = new StringBuffer();
+		for (RewritingRule r : this._map.values())
+			s.append(r.toString(precision));
 		return (s.toString());
 	}
 }

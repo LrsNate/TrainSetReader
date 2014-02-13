@@ -12,8 +12,8 @@ public class ArgumentParser
 	private Integer						_precision;
 	private LinkedList<BufferedReader>	_fds;
 	
-	public ArgumentParser(String[] argv)
-	{		
+	public ArgumentParser(String argv[])
+	{
 		this._fds = new LinkedList<BufferedReader>();
 		this._precision = null;
 		for (int i = 0; i < argv.length; i++)
@@ -28,7 +28,9 @@ public class ArgumentParser
 				}
 				catch (NumberFormatException e)
 				{
-					Messages.warning(e.getMessage());
+					Messages.warning(String.format(
+							"invalid precision argument: %s",
+							argv[i + 1]));
 				}
 			}
 			else
@@ -111,7 +113,7 @@ public class ArgumentParser
 		}
 	}
 	
-	private int parsePrecision(String[] argv, int idx)
+	private int parsePrecision(String argv[], int idx)
 		throws NumberFormatException
 	{
 		int		res;
@@ -120,7 +122,7 @@ public class ArgumentParser
 			Messages.error("missing precision argument.");
 		res = Integer.parseInt(argv[idx + 1]);
 		Messages.info(String.format("precision set to: %d digits.",
-				this._precision));
+				res));
 		return (res);
 	}
 }

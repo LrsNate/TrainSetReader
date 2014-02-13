@@ -33,6 +33,6 @@ public class Main
 				Messages.error(e.getMessage());
 			}
 		}
-		System.out.print(g.toString());
+		System.out.print(g.toString(ap.getPrecision()));
 	}
 }
