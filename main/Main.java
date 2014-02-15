@@ -17,11 +17,14 @@ public class Main
 		CorpusReader	cr;
 		String			s;
 		Grammar			g;
+		Timer			t;
 
+		t = new Timer();
 		g = new Grammar();
 		ap = new ArgumentParser(argv);
 		while ((br = ap.getNextFile()) != null)
 		{
+			System.err.println(t.lap());
 			cr = new CorpusReader(br);
 			try
 			{
@@ -33,6 +36,8 @@ public class Main
 				Messages.error(e.getMessage());
 			}
 		}
-		System.out.print(g.toString(ap.getPrecision()));
+		System.err.println(t.lap());
+		g.display(ap.getPrecision());
+		System.err.println(t.lap());
 	}
 }

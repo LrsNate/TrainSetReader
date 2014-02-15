@@ -1,11 +1,13 @@
+
 package main;
 
 import java.util.HashMap;
 
+
 /**
- * A set of rewriting rules, with a number of occurrences for each.
- * @author Nate
- *
+ * The modelisation of a Probabilistic Context-Free Grammar (PCFG). It consists
+ * in a set of weighted rewriting rules. For each
+ * @author Antoine LAFOUASSE
  */
 public class Grammar
 {
@@ -37,6 +39,12 @@ public class Grammar
 			this._map.get(tab[0]).addRule(tab[1]);
 		else
 			this._map.put(tab[0], new RewritingRule(tab[0], tab[1]));
+	}
+	
+	public void display(int precision)
+	{
+		for (RewritingRule r : this._map.values())
+			r.display(precision);
 	}
 
 	@Deprecated

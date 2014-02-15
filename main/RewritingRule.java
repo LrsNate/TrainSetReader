@@ -31,6 +31,20 @@ public class RewritingRule
 		this._rhs.put(rhs, occ + 1);
 	}
 	
+	public void display(int precision)
+	{
+		double			prob;
+		String			tk;
+		
+		tk = String.format("%%.%df ", precision);
+		for (Map.Entry<String, Integer> e : this._rhs.entrySet())
+		{
+			prob = (double) e.getValue() / (double) this._lho;
+			System.out.printf(tk, prob, precision);
+			System.out.printf("%s -> %s\n", this._lhs, e.getKey());
+		}
+	}
+	
 	@Override
 	@Deprecated
 	public String toString()

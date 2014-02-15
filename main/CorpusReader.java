@@ -5,22 +5,33 @@ import java.io.IOException;
 import java.util.LinkedList;
 
 /**
- * A class whose role is to read a file and return rewriting rules, one at a 
- * time.
+ * A class which reads a file pointed to by a BufferedReader file descriptor,
+ * and progressively generates non-weighted rewriting rules from it. These 
+ * rules are to be returned to the program one at a time.
  * @author Antoine LAFOUASSE
- *
  */
 public class CorpusReader
 {
 	private LinkedList<String>	_buffer;
 	private BufferedReader		_fd;
 	
+	/**
+	 * Instantiates a new reader with the file descriptor given in argument.
+	 * @param in a BufferedReader pointing to a valid corpus.
+	 * @see java.io.BufferedReader
+	 */
 	public CorpusReader(BufferedReader in)
 	{
 		this._buffer = new LinkedList<String>();
 		this._fd = in;
 	}
 	
+	/**
+	 * Returns a rewriting rule from the file loaded in the reader, processing
+	 * part of the file if needed.
+	 * @return A non-weighted rewriting rule under the form "lvalue -> rvalue".
+	 * @throws IOException If a file reading failure occurred.
+	 */
 	public String getNextRule() throws IOException
 	{
 		TreeNode	n;

@@ -7,20 +7,36 @@ import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.util.LinkedList;
 
+/**
+ * A utility class which processes the program's command line arguments and
+ * loads file descriptors and a precision argument. Precision is provided via
+ * a -p or --precision flag followed by a non-negative integer. Any other
+ * argument or invalid precision argument is treated as a path to a file.
+ * This class then loads BufferedReader instances and delivers them one by one.
+ * If no valid files are provided, a BufferedReader pointing to standard input
+ * is loaded.
+ * @author Antoine LAFOUASSE
+ * @see java.io.BufferedReader
+ */
 public class ArgumentParser
 {
 	private Integer						_precision;
 	private LinkedList<BufferedReader>	_fds;
 	
+	private static int					_defaultPrecision = 10;
+
+	/**
+	 * Builds a new ArgumentParser and parses the wordtab given in argument.
+	 * @param argv Originally the program's command line arguments.
+	 */
 	public ArgumentParser(String argv[])
 	{
 		this._fds = new LinkedList<BufferedReader>();
 		this._precision = null;
 		for (int i = 0; i < argv.length; i++)
 		{
-			if (argv[i].equals("-p"))
+			if (argv[i].equals("-p") || argv[i].equals("--precision"))
 			{
-				Messages.info("precision option specified.");
 				try
 				{
 					this._precision = this.parsePrecision(argv, i);
@@ -48,35 +64,43 @@ public class ArgumentParser
 				}
 			}
 		}
-		if (this._precision == null)
-		{
-			Messages.info("setting precision to 7 (default value)");
-			this._precision = 7;
-		}
-		if (this._fds.isEmpty())
-		{
-			Messages.info("no valid input files provided.");
-			Messages.info("reading from standard input.");
-			this._fds.addLast(this.openStandardInput());
-		}
+		this.setDefaultValues();
 	}
 	
+	/**
+	 * Returns and removes a file descriptor from the list parsed from the
+	 * command line arguments.
+	 * @return a BufferedReader instance or null if there are no file
+	 * descriptors left.
+	 */
 	public BufferedReader getNextFile()
 	{
 		return (this._fds.pollFirst());
 	}
 	
+	/**
+	 * Returns a precision setting for the program. If it was not provided in
+	 * the command line arguments, then a default value is returned.
+	 * @return A non-negative integer.
+	 */
 	public int getPrecision()
 	{
 		return (this._precision);
 	}
-
+	
 	/**
-	 * Tries to open a file and returns a BufferedReader pointing to it.
-	 * @param filename The path to the input file.
-	 * @return A BufferedReader instance.
-	 * @throws Exception If the file could not be opened.
+	 * Changes the default precision value, to which this parser will revert
+	 * if a precision parameter is not provided through the command line.
+	 * @param precision A non-negative integer.
 	 */
+	public static void setDefaultPrecision(int precision)
+	{
+		if (precision < 0)
+			throw new IllegalArgumentException(
+					"Precision must not be a negative value.");
+		ArgumentParser._defaultPrecision = precision;
+	}
+
 	private BufferedReader openFile(String filename)
 			throws FileNotFoundException
 	{
@@ -85,7 +109,6 @@ public class ArgumentParser
 		f = new FileInputStream(filename);
 		try
 		{
-			Messages.info(String.format("opening file: %s", filename));
 			return (new BufferedReader(new InputStreamReader(f, "UTF-8")));
 		}
 		catch (UnsupportedEncodingException e)
@@ -95,10 +118,6 @@ public class ArgumentParser
 		}
 	}
 	
-	/**
-	 * Opens standard input (stdin)
-	 * @return A BufferedReader instance pointing to standard input.
-	 */
 	private BufferedReader openStandardInput()
 	{
 		try
@@ -113,16 +132,40 @@ public class ArgumentParser
 		}
 	}
 	
-	private int parsePrecision(String argv[], int idx)
+	private Integer parsePrecision(String argv[], int idx)
 		throws NumberFormatException
 	{
 		int		res;
 
 		if ((idx + 1) >= argv.length)
-			Messages.error("missing precision argument.");
+		{
+			Messages.warning("missing precision argument.");
+			return (null);
+		}
 		res = Integer.parseInt(argv[idx + 1]);
+		if (res < 0)
+			throw new NumberFormatException(String.format(
+					"%d (must be non-negative)",
+					res));
 		Messages.info(String.format("precision set to: %d digits.",
 				res));
 		return (res);
+	}
+	
+	private void setDefaultValues()
+	{
+		if (this._precision == null)
+		{
+			Messages.info(String.format(
+					"setting precision to %d (default value)",
+					ArgumentParser._defaultPrecision));
+			this._precision = ArgumentParser._defaultPrecision;
+		}
+		if (this._fds.isEmpty())
+		{
+			Messages.info("no valid input files provided.");
+			Messages.info("reading from standard input.");
+			this._fds.addLast(this.openStandardInput());
+		}
 	}
 }
