@@ -40,8 +40,7 @@ public class TreeNodeTest
 		{
 			Assert.fail("Exception thrown.");
 		}
-		Assert.assertFalse(this._instance.getValue().contains("("));
-		Assert.assertFalse(this._instance.getValue().contains(")"));		
+		instance = new TreeNode("NPP Marie");
 	}
 	
 	@Test
@@ -50,8 +49,8 @@ public class TreeNodeTest
 		String		s1;
 		String		s2;
 		
-		s1 = new String("NP -> DET NC\n");
-		s2 = new String("VP -> V NP\nNP -> NPP\n");
+		s1 = "NP -> DET NC\n";
+		s2 = "VP -> V NP\nNP -> NPP\n";
 		Assert.assertEquals(s1, this._instance.dump());
 		Assert.assertEquals(s2, this._instance2.dump());
 	}
