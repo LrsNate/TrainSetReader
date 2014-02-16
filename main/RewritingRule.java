@@ -3,6 +3,14 @@ package main;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * A Production rule as defined in Noam Chomsky's definition of a formal
+ * grammar. This particular implementation associates a left-hand side symbol
+ * and the number of times it has been encountered throughout the program's
+ * runtime and a set of right-hand side symbols.
+ * @author Antoine LAFOUASSE
+ *
+ */
 public class RewritingRule
 {
 	private String						_lhs;

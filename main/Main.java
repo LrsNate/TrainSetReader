@@ -24,7 +24,7 @@ public class Main
 		ap = new ArgumentParser(argv);
 		while ((br = ap.getNextFile()) != null)
 		{
-			System.err.println(t.lap());
+			Messages.info(t.lap());
 			cr = new CorpusReader(br);
 			try
 			{
@@ -36,8 +36,8 @@ public class Main
 				Messages.error(e.getMessage());
 			}
 		}
-		System.err.println(t.lap());
+		Messages.info(t.lap());
 		g.display(ap.getPrecision());
-		System.err.println(t.lap());
+		Messages.info(t.lap());
 	}
 }

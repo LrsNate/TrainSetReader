@@ -41,6 +41,10 @@ public class Grammar
 			this._map.put(tab[0], new RewritingRule(tab[0], tab[1]));
 	}
 	
+	/**
+	 * 
+	 * @param precision
+	 */
 	public void display(int precision)
 	{
 		for (RewritingRule r : this._map.values())
@@ -59,6 +63,14 @@ public class Grammar
 		return (s.toString());
 	}
 	
+	/**
+	 * Returns a String representation of the grammar, i.e. all the rules
+	 * contained in it.
+	 * @param precision The precision (in digits after the decimal separator)
+	 * with which the rules' frequency is to be displayed.
+	 * @return A String instance with one rewriting rule per line, each line
+	 * stating frequency, left-hand value, a separator and right-hand values.
+	 */
 	public String toString(int precision)
 	{
 		StringBuffer	s;
