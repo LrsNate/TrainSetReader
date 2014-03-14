@@ -9,8 +9,11 @@ import java.util.LinkedList;
  */
 public class TreeNode
 {
-	private String					_value;
-	private LinkedList<TreeNode>	_children;
+	private final String					_value;
+	private final LinkedList<TreeNode>		_children;
+	
+	private static String			_errorMessage =
+			"could not be resolved to a bracketed sentence.";
 	
 	/**
 	 * Builds a new syntactic tree.
@@ -24,6 +27,10 @@ public class TreeNode
 			throw new IllegalArgumentException("Empty value");
 		if (v.charAt(0) == '(' && v.charAt(v.length() - 1) == ')')
 			v = v.substring(1, v.length() - 1);
+		if (!v.matches("^\\S+ \\S+$")
+			&& !v.matches("^\\S+( *\\(.+\\))+$"))
+			throw new IllegalArgumentException(
+					"\"" + v + "\" " + TreeNode._errorMessage);
 		end = 0;
 		while (v.charAt(end) != ' ' && v.charAt(end) != '-')
 			end++;
@@ -32,24 +39,19 @@ public class TreeNode
 		while ((v = TreeNode.skipToNextChild(v)) != null)
 			this._children.addLast(new TreeNode(TreeNode.getNextChild(v)));
 	}
-	
-	/**
-	 * Dumps the entire tree into a String by recursively calling its toString
-	 * method and stops on encountering a leaf.
-	 * @return A partial collection of rewriting rules.
-	 */
-	public String dump()
-	{
-		StringBuffer	s;
 
-		s = new StringBuffer();
+	public LinkedList<String[]> dumpWordTab()
+	{
+		LinkedList<String[]>		res;
+		
+		res = new LinkedList<String[]>();
 		if (!this._children.isEmpty())
 		{
-			s.append(this.toString() + "\n");
+			res.add(this.toWordTab());
 			for (TreeNode n : this._children)
-				s.append(n.dump());
+				res.addAll(n.dumpWordTab());
 		}
-		return (s.toString());
+		return (res);
 	}
 	
 	/**
@@ -75,6 +77,21 @@ public class TreeNode
 			s.append(n.getValue());
 		}
 		return (s.toString());
+	}
+	
+	public String[] toWordTab()
+	{
+		String				res[];
+		StringBuffer		s;
+		
+		res = new String[2];
+		res[0] = this._value;
+		s = new StringBuffer();
+		for (TreeNode n : this._children)
+			s.append(" " + n.getValue());
+		s.deleteCharAt(0);
+		res[1] = s.toString();
+		return (res);
 	}
 	
 	private static String getNextChild(String s)

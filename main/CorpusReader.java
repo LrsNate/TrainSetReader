@@ -2,7 +2,6 @@ package main;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.util.LinkedList;
 
 /**
  * A class which reads a file pointed to by a BufferedReader file descriptor,
@@ -11,50 +10,18 @@ import java.util.LinkedList;
  * @author Antoine LAFOUASSE
  */
 public class CorpusReader
-{
-	private LinkedList<String>	_buffer;
-	private BufferedReader		_fd;
-	
-	/**
-	 * Instantiates a new reader with the file descriptor given in argument.
-	 * @param in a BufferedReader pointing to a valid corpus.
-	 * @see java.io.BufferedReader
-	 */
-	public CorpusReader(BufferedReader in)
-	{
-		this._buffer = new LinkedList<String>();
-		this._fd = in;
-	}
-	
-	/**
-	 * Returns a rewriting rule from the file loaded in the reader, processing
-	 * part of the file if needed.
-	 * @return A non-weighted rewriting rule under the form "lvalue -> rvalue".
-	 * @throws IOException If a file reading failure occurred.
-	 */
-	public String getNextRule() throws IOException
-	{
-		TreeNode	n;
-		
-		if (this._buffer.isEmpty())
-		{
-			if ((n = this.getNextTree()) == null)
-				return (null);
-			for (String s : n.dump().split("\n"))
-				this._buffer.addLast(s);
-		}
-		return (this._buffer.pollFirst());
-	}
-	
-	private TreeNode getNextTree() throws IOException
+{	
+	public static void read(BufferedReader fd)
 	{
 		String		line;
-		
-		if ((line = this._fd.readLine()) == null)
-			return (null);
-		if (line.length() < 3)
-			throw new IOException ("Wrong file format");
-		line = line.substring(2, line.length() - 1);
-		return new TreeNode(line);
+		try
+		{
+			while ((line = fd.readLine()) != null)
+				ThreadPool.getInstance().submit(new SentenceReader(line));
+		}
+		catch (IOException e)
+		{
+			Messages.error(e.getMessage());
+		}
 	}
 }

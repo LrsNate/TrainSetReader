@@ -7,7 +7,7 @@ package main;
  */
 public class Timer
 {
-	private long		_start;
+	private final long	_start;
 	private long		_lastLap;
 	private int			_lapCount;
 

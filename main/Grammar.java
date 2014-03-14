@@ -1,26 +1,31 @@
 
 package main;
 
-import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 
 /**
  * The modelisation of a Probabilistic Context-Free Grammar (PCFG). It consists
- * in a set of weighted rewriting rules. For each
+ * in a set of weighted rewriting rules, with each rule having its probability
+ * processed at display time.
  * @author Antoine LAFOUASSE
  */
-public class Grammar
-{
-	private HashMap<String, RewritingRule>		_map;
+public final class Grammar
+{	
+	private final ConcurrentHashMap<String, RewritingRule>	_map;
 	
-	/**
-	 * Builds a new empty grammar.
-	 */
-	public Grammar()
+	private final static Grammar	_instance = new Grammar();
+	private final static int		_defaultMapSize = 5000;
+
+	private Grammar()
 	{
-		this._map = new HashMap<String, RewritingRule>();
+		this._map = new ConcurrentHashMap<String, RewritingRule>(
+				Grammar._defaultMapSize);
 	}
-	
+
 	/**
 	 * Adds a rule to the grammar and either creates a new entry or increments
 	 * its occurrence count.
@@ -41,14 +46,39 @@ public class Grammar
 			this._map.put(tab[0], new RewritingRule(tab[0], tab[1]));
 	}
 	
+	public synchronized void addRule(String tab[])
+	{
+		if (this._map.containsKey(tab[0]))
+			this._map.get(tab[0]).addRule(tab[1]);
+		else
+			this._map.put(tab[0], new RewritingRule(tab[0], tab[1]));
+	}
+	
 	/**
 	 * 
 	 * @param precision
 	 */
 	public void display(int precision)
 	{
+		ExecutorService		e;
+		Runnable			t;
+		
+		e = Executors.newFixedThreadPool(
+				Environment.getNThreads());
 		for (RewritingRule r : this._map.values())
-			r.display(precision);
+		{
+			t = new RewritingRuleDisplayer(r, precision);
+			e.submit(t);
+		}
+		e.shutdown();
+		try
+		{
+			while (!e.awaitTermination(1, TimeUnit.SECONDS));
+		}
+		catch (InterruptedException ex)
+		{
+			Messages.error(ex.getMessage());
+		}
 	}
 
 	@Deprecated
@@ -79,5 +109,14 @@ public class Grammar
 		for (RewritingRule r : this._map.values())
 			s.append(r.toString(precision));
 		return (s.toString());
+	}
+	
+	/**
+	 * Fetches and return the singleton instance of the grammar.
+	 * @return A unique grammar object.
+	 */
+	public static Grammar getInstance()
+	{
+		return (Grammar._instance);
 	}
 }

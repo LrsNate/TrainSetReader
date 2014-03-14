@@ -10,8 +10,9 @@ import java.util.LinkedList;
 /**
  * A utility class which processes the program's command line arguments and
  * loads file descriptors and a precision argument. Precision is provided via
- * a -p or --precision flag followed by a non-negative integer. Any other
- * argument or invalid precision argument is treated as a path to a file.
+ * a -p or --precision flag followed by a non-negative integer. The number of 
+ * threads used by the program is provided via the -t or --nthreads flag. Any
+ * other argument or invalid precision argument is treated as a path to a file.
  * This class then loads BufferedReader instances and delivers them one by one.
  * If no valid files are provided, a BufferedReader pointing to standard input
  * is loaded.
@@ -20,10 +21,7 @@ import java.util.LinkedList;
  */
 public class ArgumentParser
 {
-	private Integer						_precision;
-	private LinkedList<BufferedReader>	_fds;
-	
-	private static int					_defaultPrecision = 10;
+	private final LinkedList<BufferedReader>	_fds;
 
 	/**
 	 * Builds a new ArgumentParser and parses the wordtab given in argument.
@@ -32,20 +30,33 @@ public class ArgumentParser
 	public ArgumentParser(String argv[])
 	{
 		this._fds = new LinkedList<BufferedReader>();
-		this._precision = null;
 		for (int i = 0; i < argv.length; i++)
 		{
 			if (argv[i].equals("-p") || argv[i].equals("--precision"))
 			{
 				try
 				{
-					this._precision = this.parsePrecision(argv, i);
+					ArgumentParser.parsePrecision(argv, i);
 					i++;
 				}
 				catch (NumberFormatException e)
 				{
 					Messages.warning(String.format(
 							"invalid precision argument: %s",
+							argv[i + 1]));
+				}
+			}
+			else if (argv[i].equals("-t") || argv[i].equals("--nthreads"))
+			{
+				try
+				{
+					ArgumentParser.parseNThreads(argv, i);
+					i++;
+				}
+				catch (NumberFormatException e)
+				{
+					Messages.warning(String.format(
+							"invalid nthreads argument: %s",
 							argv[i + 1]));
 				}
 			}
@@ -77,29 +88,6 @@ public class ArgumentParser
 	{
 		return (this._fds.pollFirst());
 	}
-	
-	/**
-	 * Returns a precision setting for the program. If it was not provided in
-	 * the command line arguments, then a default value is returned.
-	 * @return A non-negative integer.
-	 */
-	public int getPrecision()
-	{
-		return (this._precision);
-	}
-	
-	/**
-	 * Changes the default precision value, to which this parser will revert
-	 * if a precision parameter is not provided through the command line.
-	 * @param precision A non-negative integer.
-	 */
-	public static void setDefaultPrecision(int precision)
-	{
-		if (precision < 0)
-			throw new IllegalArgumentException(
-					"Precision must not be a negative value.");
-		ArgumentParser._defaultPrecision = precision;
-	}
 
 	private BufferedReader openFile(String filename)
 			throws FileNotFoundException
@@ -118,7 +106,17 @@ public class ArgumentParser
 		}
 	}
 	
-	private BufferedReader openStandardInput()
+	private void setDefaultValues()
+	{
+		if (this._fds.isEmpty())
+		{
+			Messages.info("no valid input files provided.");
+			Messages.info("reading from standard input.");
+			this._fds.addLast(ArgumentParser.openStandardInput());
+		}
+	}
+	
+	private static BufferedReader openStandardInput()
 	{
 		try
 		{
@@ -130,9 +128,28 @@ public class ArgumentParser
 			Messages.warning(e.getMessage());
 			return (new BufferedReader(new InputStreamReader(System.in)));
 		}
+	}	
+	private static void parseNThreads(String argv[], int idx)
+			throws NumberFormatException
+	{
+		int		res;
+
+		if ((idx + 1) >= argv.length)
+		{
+			Messages.warning("missing threads argument.");
+			return ;
+		}
+		res = Integer.parseInt(argv[idx + 1]);
+		if (res <= 0)
+			throw new NumberFormatException(String.format(
+					"%d (must be non-negative)",
+					res));
+		Messages.info(String.format("multi-threading set to: %d threads.",
+				res));
+		Environment.setNThreads(res);
 	}
-	
-	private Integer parsePrecision(String argv[], int idx)
+
+	private static void parsePrecision(String argv[], int idx)
 		throws NumberFormatException
 	{
 		int		res;
@@ -140,7 +157,7 @@ public class ArgumentParser
 		if ((idx + 1) >= argv.length)
 		{
 			Messages.warning("missing precision argument.");
-			return (null);
+			return ;
 		}
 		res = Integer.parseInt(argv[idx + 1]);
 		if (res < 0)
@@ -149,23 +166,6 @@ public class ArgumentParser
 					res));
 		Messages.info(String.format("precision set to: %d digits.",
 				res));
-		return (res);
-	}
-	
-	private void setDefaultValues()
-	{
-		if (this._precision == null)
-		{
-			Messages.info(String.format(
-					"setting precision to %d (default value)",
-					ArgumentParser._defaultPrecision));
-			this._precision = ArgumentParser._defaultPrecision;
-		}
-		if (this._fds.isEmpty())
-		{
-			Messages.info("no valid input files provided.");
-			Messages.info("reading from standard input.");
-			this._fds.addLast(this.openStandardInput());
-		}
+		Environment.setPrecision(res);
 	}
 }
