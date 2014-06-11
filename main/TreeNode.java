@@ -22,15 +22,27 @@ public class TreeNode
 	public TreeNode(String v)
 	{
 		int		end;
+		String	tab[];
 
 		if (v.isEmpty())
 			throw new IllegalArgumentException("Empty value");
 		if (v.charAt(0) == '(' && v.charAt(v.length() - 1) == ')')
 			v = v.substring(1, v.length() - 1);
-		if (!v.matches("^\\S+ \\S+$")
+		if (!v.matches("^\\S+$")
+			&& !v.matches("^\\S+ \\S+$")
 			&& !v.matches("^\\S+( *\\(.+\\))+$"))
 			throw new IllegalArgumentException(
 					"\"" + v + "\" " + TreeNode._errorMessage);
+		else if (!v.matches("^\\S+( *\\(.+\\))+$")
+			&& Environment.hasLexical())
+		{
+			tab = v.split(" ");
+			this._value = tab[0];
+			this._children = new LinkedList<TreeNode>();
+			if (tab.length > 1)
+				this._children.addLast(new TreeNode(tab[1]));
+			return ;
+		}
 		end = 0;
 		while (v.charAt(end) != ' ' && v.charAt(end) != '-')
 			end++;

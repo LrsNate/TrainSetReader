@@ -60,6 +60,11 @@ public class ArgumentParser
 							argv[i + 1]));
 				}
 			}
+			else if (argv[i].equals("-l") || argv[i].equals("--lexical"))
+			{
+				Messages.info("reader set to track lexical rules.");
+				Environment.setLexical(true);
+			}
 			else
 			{
 				try
